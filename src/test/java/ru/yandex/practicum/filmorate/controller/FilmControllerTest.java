@@ -52,6 +52,18 @@ public class FilmControllerTest {
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
 
+    @Test //    описание фильма пустое для валидации с тестами гитхаб
+    void shouldCreateFilmWithDescriptionEmpty() {
+        Film film = Film.builder()
+                .id(1)
+                .name("Matrix")
+                .description("")
+                .releaseDate(LocalDate.of(1999, 3, 31))
+                .duration(Duration.ofMinutes(120))
+                .build();
+        assertThrows(ValidationException.class, () -> filmController.create(film));
+    }
+
     @Test //    дата релиза — не раньше 28 декабря 1895 года
     void shouldCreateFilmBeforeCinemaBirthday() {
         Film film = Film.builder()

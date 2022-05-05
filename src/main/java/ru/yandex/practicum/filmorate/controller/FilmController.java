@@ -56,8 +56,8 @@ public class FilmController {
             log.warn("Поле film заполнено некорректно: название фильма пустое.");
             return false;
         }
-        if (film.getDescription().length() > 200) {
-            log.warn("Поле description заполнено некорректно: превышен лимит 200 символов.");
+        if (film.getDescription().length() > 200 || film.getDescription().isEmpty() || film.getDescription() == null) {
+            log.warn("Поле description заполнено некорректно: описание отсутствует или превышен лимит 200 символов.");
             return false;
         }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
