@@ -14,23 +14,25 @@ import java.util.*;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
+    private final static LocalDate TODAY_DATE = LocalDate.now();
 
     @PostMapping  // создание пользователя
     public User create(@RequestBody User user) {
         if (validateInput(user)) {
-            for (User i : users.values()) {
-                if (i.getEmail().equals(user.getEmail()) || i.getLogin().equals(user.getLogin())) {
-                    log.info("Попытка создания {} с уже используемым адресом электронной почты или логином.", user);
+            for (User u : users.values()) {
+                if (u.getEmail().equals(user.getEmail()) || u.getLogin().equals(user.getLogin())) {
+                    log.info("Попытка создания пользователя с уже используемым адресом электронной почты " +
+                            "или логином: {}.", user);
                     throw new ValidationException("Адрес электронной почты или логин уже используются.");
                 }
             }
             if (user.getName().isEmpty()) {
                 user.setName(user.getLogin());
-                log.info("Имя пользователя было незаполнено, автоматически присвоено имя логина {}.", user);
+                log.info("Имя пользователя не было заполнено, автоматически присвоено имя логина: {}.", user.getName());
             }
             user.setId(IdGeneratorUser.generateId());
             users.put(user.getId(), user);
-            log.info("Добавлен пользователь {}", user);
+            log.info("Добавлен пользователь: {}", user);
             return user;
         } else {
             throw new ValidationException("Введены некорректные данные, проверьте корректность заполнения полей.");
@@ -42,9 +44,9 @@ public class UserController {
         validateInput(user);
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
-            log.info("Обновлены данные пользователя {}", user);
+            log.info("Обновлены данные пользователя: {}.", user);
         } else {
-            log.debug("Попытка обновления данных пользователя с несуществующим идентификатором " + user.getId());
+            log.debug("Попытка обновления данных пользователя с несуществующим идентификатором: {}", user.getId());
             throw new ValidationException("Введен не корректный id пользователя. Ваш id № " + user.getId());
         }
         return user;
@@ -57,15 +59,16 @@ public class UserController {
 
     private boolean validateInput(User user) {
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Поле email заполнено некорректно: пустое или не содержит символ @.");
+            log.warn("Поле email заполнено некорректно: {}.", user.getEmail());
             return false;
         }
         if (user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
-            log.warn("Поле login заполнено некорректно: пустое или содержит пробелы.");
+            log.warn("Поле login заполнено некорректно: {}.", user.getLogin());
             return false;
         }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Поле birthday заполнено некорректно: дата дня рождения еще не наступила.");
+        if (user.getBirthday().isAfter(TODAY_DATE)) {
+            log.warn("Поле birthday заполнено некорректно: {}. Указанная дата дня рождения позже {}.",
+                    user.getBirthday(), TODAY_DATE);
             return false;
         }
         return true;
