@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserService { // отвечает за добавление / удаление друзей, вывод списка общих друзей
     private final UserStorage userStorage;
@@ -28,75 +30,87 @@ public class UserService { // отвечает за добавление / уд�
         return userStorage.put(user);
     }
 
-    public Collection<User> findAllUsers() { // найти всех пользователей
+    public List<User> findAllUsers() { // найти всех пользователей
         return userStorage.findAll();
     }
 
-    public User getUserById(Long id) { // найти пользователя по идентификатору
+    public Optional<User> getUserById(Long id) { // найти пользователя по идентификатору
         return userStorage.getById(id);
     }
 
     public void addFriend(Long userId, Long friendId) throws UserNotFoundException { // добавить друга
-        if (!findAllUsers().contains(userId)) {
+        if (userStorage.getById(userId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
-        if (!findAllUsers().contains(friendId)) {
+        if (userStorage.getById(friendId).isEmpty()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + friendId);
         }
-        Set<Long> userFriends = friendsMap.getOrDefault(userId, new HashSet<>());
-        userFriends.add(friendId);
-        friendsMap.put(userId, userFriends);
-        System.out.format("В список друзей пользователя %s добавлено %s пользователей.",
-                getUserById(userId), getSumFriendsForUser(userId));
+
+        Set<Long> user = friendsMap.getOrDefault(userId, new HashSet<>());
+        user.add(friendId);
+        friendsMap.put(userId, user);
+        log.info("В список друзей пользователя {} добавлен пользователь {}.",
+                getUserById(userId), getUserById(friendId));
+
+        Set<Long> friend = friendsMap.getOrDefault(friendId, new HashSet<>());
+        friend.add(userId);
+        friendsMap.put(friendId, friend);
+        log.info("В список друзей пользователя {} добавлен пользователь {}.",
+                getUserById(friendId), getUserById(userId));
     }
 
     public void deleteFriend(Long userId, Long friendId) throws UserNotFoundException { // удалить друга
-        if (!findAllUsers().contains(userId)) {
+        if (userStorage.getById(userId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
-        if (!findAllUsers().contains(friendId)) {
+        if (userStorage.getById(friendId).isEmpty()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + friendId);
         }
-        Set<Long> userFriends = friendsMap.get(userId);
-        if (userFriends.size() == 0) {
+
+        Set<Long> user = friendsMap.get(userId);
+        if (user == null) {
             throw new NullPointerException("Список друзей пользователя пуст.");
-        } else if (userFriends.size() == 1) {
-            userFriends.remove(friendId);
-            friendsMap.remove(userId);
         } else {
-            userFriends.remove(friendId);
-            friendsMap.put(userId, userFriends);
+            user.remove(friendId);
+            friendsMap.put(userId, user);
+            log.info("Из списка друзей пользователя {} удален пользователь {}.",
+                    getUserById(userId), getUserById(friendId));
+        }
+
+        Set<Long> friend = friendsMap.get(friendId);
+        if (friend == null) {
+            throw new NullPointerException("Список друзей пользователя пуст.");
+        } else {
+            friend.remove(userId);
+            friendsMap.put(friendId, friend);
+            log.info("Из списка друзей пользователя {} удален пользователь {}.",
+                    getUserById(friendId), getUserById(userId));
         }
     }
 
-    public Collection<User> getFriendsForUser(Long userId) { // получить список друзей пользователя
-        if (!findAllUsers().contains(userId)) {
+    public List<User> getFriendsForUser(Long userId) { // получить список друзей пользователя
+        if (userStorage.getById(userId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
         return friendsMap.getOrDefault(userId, new HashSet<>()).stream()
-                .map(userStorage::getById)
+                .map(u->userStorage.getById(u).get())
                 .collect(Collectors.toList()
                 );
     }
 
-    public Collection<User> getCommonFriends(Long userId, Long friendId) throws UserNotFoundException {
-        if (!findAllUsers().contains(userId)) {
+    public List<User> getCommonFriends(Long userId, Long friendId) throws UserNotFoundException {
+        if (userStorage.getById(userId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
-        if (!findAllUsers().contains(friendId)) {
+        if (userStorage.getById(friendId).isEmpty()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + friendId);
         }
         Set<Long> commonFriends = new TreeSet<>();
         commonFriends.addAll(friendsMap.get(userId));
         commonFriends.addAll(friendsMap.get(friendId));
         return commonFriends.stream()
-                .map(userStorage::getById)
+                .map(u->userStorage.getById(u).get())
                 .collect(Collectors.toList());
-    }
-
-    private Long getSumFriendsForUser(Long userId) {
-        Set<Long> sumFriends = friendsMap.get(userId);
-        return (long) sumFriends.size();
     }
 }
 

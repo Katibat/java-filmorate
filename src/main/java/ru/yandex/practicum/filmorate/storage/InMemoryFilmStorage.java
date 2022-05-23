@@ -49,13 +49,13 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
     }
 
     @Override
-    public Collection<Film> findAll() {
+    public List<Film> findAll() {
         return new ArrayList<>(films.values());
     }
 
     @Override
-    public Film getById(Long id) {
-        return films.get(id);
+    public Optional<Film> getById(Long id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     private boolean validate(Film film) {

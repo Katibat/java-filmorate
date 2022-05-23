@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -55,23 +54,23 @@ public class FilmController {
     }
 
     @GetMapping  // получение всех фильмов
-    public Collection<Film> getAllFilms() {
+    public List<Film> getAllFilms() {
         return filmService.findAllFilms();
     }
 
     @GetMapping("/popular")  // получение 10 популярных фильмов
-    public Collection<Film> getPopularFilms(
+    public List<Film> getPopularFilms(
             @RequestParam(value = "count", defaultValue = "10", required = false) int count) {
         return filmService.findPopularFilms(count);
     }
 
     @GetMapping("/{id}") // получение фильма по id
     public Film getFilmById(@PathVariable Long id) throws FilmNotFoundException {
-        Film film = filmService.getFilmById(id);
-        if (film == null) {
+        Optional<Film> film = filmService.getFilmById(id);
+        if (film.isEmpty()) {
             log.debug("Попытка получить фильм с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }
-        return film;
+        return film.get();
     }
 }

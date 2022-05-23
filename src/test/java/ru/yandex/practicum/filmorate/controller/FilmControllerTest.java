@@ -4,12 +4,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
@@ -154,21 +151,21 @@ public class FilmControllerTest {
     void shouldUpdateFilmWithIncorrectId() {
         Film film = Film.builder()
                 .id(1L)
-                .name("A Dog’s Purpose")
-                .description("description A Dog’s Purpose")
+                .name("A Dog’s Purpose 2")
+                .description("description A Dog’s Purpose 2")
                 .releaseDate(LocalDate.of(2016, 8, 26))
                 .duration(Duration.ofMinutes(180))
                 .build();
         filmController.create(film);
         Film filmUpdate = Film.builder()
                 .id(film.getId())
-                .name("A Dog’s Purpose")
-                .description("new description A Dog’s Purpose")
+                .name("A Dog’s Purpose 2")
+                .description("new description A Dog’s Purpose 2")
                 .releaseDate(LocalDate.of(2017, 1, 27))
                 .duration(Duration.ofMinutes(100))
                 .build();
         filmController.put(filmUpdate);
-        Film actual = filmController.getFilmById(1L);
+        Film actual = filmController.getFilmById(filmUpdate.getId());
         Assertions.assertEquals(filmUpdate, actual);
     }
 }

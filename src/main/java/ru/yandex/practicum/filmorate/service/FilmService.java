@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class FilmService { // отвечает за операции с фильмами: добавление/удаление лайков, 10 популярных фильмов
     private final FilmStorage filmStorage;
@@ -31,20 +33,20 @@ public class FilmService { // отвечает за операции с филь
         return filmStorage.put(film);
     }
 
-    public Collection<Film> findAllFilms() { // найти все фильмы
+    public List<Film> findAllFilms() { // найти все фильмы
         return filmStorage.findAll();
     }
 
-    public Film getFilmById(Long id) { // найти фильм по идентификатору
+    public Optional<Film> getFilmById(Long id) { // найти фильм по идентификатору
         return filmStorage.getById(id);
     }
 
-    public Collection<Film> findPopularFilms(int count) { // найти 10 самых популярных фильмов
+    public List<Film> findPopularFilms(int count) { // найти 10 самых популярных фильмов
         List<Film> all = new ArrayList<>(filmStorage.findAll());
-        List<Film> liked = new ArrayList<>(sortedPopularFilms(count));
+        List<Film> liked = new ArrayList<>(sortedFilmsByPopularity(count));
         List<Film> sorted = new ArrayList<>(liked);
         for (Film film : all) {
-            if (!(liked.contains(film.getId()))) {
+            if (!liked.contains(film.getId())) {
                 sorted.add(film);
             }
         }
@@ -53,34 +55,33 @@ public class FilmService { // отвечает за операции с филь
                 .collect(Collectors.toList());
     }
 
-    private Collection<Film> sortedPopularFilms(int count) { // сортировать фильмы по популярности
+    private List<Film> sortedFilmsByPopularity(int count) { // сортировать фильмы по популярности
         return likesMap.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.comparing(x -> 1 - x.size())))
+                .sorted(Map.Entry.comparingByValue(Comparator.comparing(f -> 1 - f.size())))
                 .limit(count)
-                .map(x -> filmStorage.getById(x.getKey()))
+                .map(f -> filmStorage.getById(f.getKey()).get())
                 .collect(Collectors.toList()
                 );
     }
 
     public void addLike(Long filmId, Long userId) throws FilmNotFoundException, UserNotFoundException {
-        if (!findAllFilms().contains(filmId)) {
+        if (filmStorage.getById(filmId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + filmId);
         }
-        if (!userStorage.findAll().contains(userId)) {
+        if (userStorage.getById(userId).isEmpty()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
         Set<Long> filmLikes = likesMap.getOrDefault(filmId, new HashSet<>());
         filmLikes.add(userId);
         likesMap.put(filmId, filmLikes);
-        System.out.format("Общая сумма отметок нравится для фильма %s составляет %s.",
-                getFilmById(filmId), getRatingFilm(filmId));
+        log.info("Добавлена отметка нравится фильму: {}", getFilmById(filmId));
     }
 
     public void deleteLike(Long filmId, Long userId) throws FilmNotFoundException, UserNotFoundException {
-        if (!findAllFilms().contains(filmId)) {
+        if (filmStorage.getById(filmId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + filmId);
         }
-        if (!userStorage.findAll().contains(userId)) {
+        if (userStorage.getById(userId).isEmpty()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
         Set<Long> filmLikes = likesMap.get(filmId);
@@ -89,14 +90,11 @@ public class FilmService { // отвечает за операции с филь
         } else if (filmLikes.size() == 1) {
             filmLikes.remove(userId);
             likesMap.remove(filmId);
+            log.info("Удалена отметка нравится фильму: {}. Фильм удален из списка популярных.", getFilmById(filmId));
         } else {
             filmLikes.remove(userId);
             likesMap.put(filmId, filmLikes);
+            log.info("Удалена отметка нравится фильму: {}", getFilmById(filmId));
         }
-    }
-
-    private Long getRatingFilm(Long filmId) {
-        Set<Long> filmRating = likesMap.get(filmId);
-        return (long) filmRating.size();
     }
 }

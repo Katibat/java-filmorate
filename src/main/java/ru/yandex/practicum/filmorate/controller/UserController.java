@@ -53,30 +53,30 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends") // получение списка друзей пользователя
-    public Collection<User> getUserFriends(@PathVariable Long id) throws UserNotFoundException {
+    public List<User> getUserFriends(@PathVariable Long id) throws UserNotFoundException {
         return userService.getFriendsForUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей 2х пользователей
-    public Collection<User> getCommonFriends(
+    public List<User> getCommonFriends(
             @PathVariable Long id,
             @PathVariable Long otherId) throws UserNotFoundException {
         return userService.getCommonFriends(id, otherId);
     }
 
     @GetMapping  // получение списка всех пользователей
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         return userService.findAllUsers();
     }
 
     @GetMapping("/{id}") // получение пользователя по id
     public User getUserById(@PathVariable Long id) throws UserNotFoundException {
-        User user = userService.getUserById(id);
+        Optional<User> user = userService.getUserById(id);
         if (user == null) {
             log.debug("Попытка получить пользователя с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + id);
         }
-        return user;
+        return user.get();
     }
 }
 
