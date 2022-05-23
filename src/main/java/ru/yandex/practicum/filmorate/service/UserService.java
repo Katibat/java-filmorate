@@ -30,7 +30,7 @@ public class UserService { // отвечает за добавление / уд�
         return userStorage.put(user);
     }
 
-    public List<User> findAllUsers() { // найти всех пользователей
+    public Collection<User> findAllUsers() { // найти всех пользователей
         return userStorage.findAll();
     }
 
@@ -88,7 +88,7 @@ public class UserService { // отвечает за добавление / уд�
         }
     }
 
-    public List<User> getFriendsForUser(Long userId) { // получить список друзей пользователя
+    public Collection<User> getFriendsForUser(Long userId) { // получить список друзей пользователя
         if (userStorage.getById(userId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
@@ -98,19 +98,24 @@ public class UserService { // отвечает за добавление / уд�
                 );
     }
 
-    public List<User> getCommonFriends(Long userId, Long friendId) throws UserNotFoundException {
+    public Collection<User> getCommonFriends(Long userId, Long friendId) throws UserNotFoundException {
         if (userStorage.getById(userId).isEmpty()) {
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
         if (userStorage.getById(friendId).isEmpty()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + friendId);
         }
-        Set<Long> commonFriends = new TreeSet<>();
-        commonFriends.addAll(friendsMap.get(userId));
-        commonFriends.addAll(friendsMap.get(friendId));
-        return commonFriends.stream()
-                .map(u->userStorage.getById(u).get())
-                .collect(Collectors.toList());
+        Collection<User> user = getFriendsForUser(userId);
+        Collection<User> friend = getFriendsForUser(friendId);
+        HashSet<User> commonFriends = new HashSet<>();
+        for (User u : user) {
+            for (User f : friend) {
+                if (u.equals(f)) {
+                    commonFriends.add(u);
+                }
+            }
+        }
+        return commonFriends;
     }
 }
 

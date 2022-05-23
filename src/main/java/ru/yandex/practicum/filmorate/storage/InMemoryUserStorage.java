@@ -55,7 +55,7 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
     }
 
     @Override
-    public List<User> findAll() {
+    public Collection<User> findAll() {
         return new ArrayList<>(users.values());
     }
 

@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
@@ -25,13 +24,13 @@ public class UserController {
     }
 
     @PostMapping  // создание пользователя
-    public User create(@Valid @RequestBody User user) throws ValidationException, UserAlreadyExistException {
+    public User create(@RequestBody User user) throws ValidationException, UserAlreadyExistException {
         log.info("Добавлен пользователь: {}", user);
         return userService.create(user);
     }
 
     @PutMapping // обновление пользователя
-    public User put(@Valid @RequestBody User user) throws ValidationException, UserNotFoundException {
+    public User put(@RequestBody User user) throws ValidationException, UserNotFoundException {
         log.info("Обновлены данные пользователя: {}.", user);
         return userService.put(user);
     }
@@ -53,26 +52,26 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends") // получение списка друзей пользователя
-    public List<User> getUserFriends(@PathVariable Long id) throws UserNotFoundException {
+    public Collection<User> getUserFriends(@PathVariable Long id) throws UserNotFoundException {
         return userService.getFriendsForUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей 2х пользователей
-    public List<User> getCommonFriends(
+    public Collection<User> getCommonFriends(
             @PathVariable Long id,
             @PathVariable Long otherId) throws UserNotFoundException {
         return userService.getCommonFriends(id, otherId);
     }
 
     @GetMapping  // получение списка всех пользователей
-    public List<User> findAll() {
+    public Collection<User> findAll() {
         return userService.findAllUsers();
     }
 
     @GetMapping("/{id}") // получение пользователя по id
     public User getUserById(@PathVariable Long id) throws UserNotFoundException {
         Optional<User> user = userService.getUserById(id);
-        if (user == null) {
+        if (!user.isPresent()) {
             log.debug("Попытка получить пользователя с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + id);
         }

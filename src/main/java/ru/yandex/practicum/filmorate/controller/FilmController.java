@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
@@ -26,13 +25,13 @@ public class FilmController {
     }
 
     @PostMapping  // добавление фильма
-    public Film create(@Valid @RequestBody Film film) throws ValidationException, FilmAlreadyExistException {
+    public Film create(@RequestBody Film film) throws ValidationException, FilmAlreadyExistException {
         log.info("Добавлен фильм: {}", film);
         return filmService.create(film);
     }
 
     @PutMapping // обновление фильма
-    public Film put(@Valid @RequestBody Film film) throws ValidationException, FilmNotFoundException {
+    public Film put(@RequestBody Film film) throws ValidationException, FilmNotFoundException {
         log.info("Обновлены данные фильма: {}.", film);
         return filmService.put(film);
     }
@@ -54,12 +53,12 @@ public class FilmController {
     }
 
     @GetMapping  // получение всех фильмов
-    public List<Film> getAllFilms() {
+    public Collection<Film> getAllFilms() {
         return filmService.findAllFilms();
     }
 
     @GetMapping("/popular")  // получение 10 популярных фильмов
-    public List<Film> getPopularFilms(
+    public Collection<Film> getPopularFilms(
             @RequestParam(value = "count", defaultValue = "10", required = false) int count) {
         return filmService.findPopularFilms(count);
     }
@@ -67,7 +66,7 @@ public class FilmController {
     @GetMapping("/{id}") // получение фильма по id
     public Film getFilmById(@PathVariable Long id) throws FilmNotFoundException {
         Optional<Film> film = filmService.getFilmById(id);
-        if (film.isEmpty()) {
+        if (film.isPresent()) {
             log.debug("Попытка получить фильм с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }

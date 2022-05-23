@@ -33,7 +33,7 @@ public class FilmService { // отвечает за операции с филь
         return filmStorage.put(film);
     }
 
-    public List<Film> findAllFilms() { // найти все фильмы
+    public Collection<Film> findAllFilms() { // найти все фильмы
         return filmStorage.findAll();
     }
 
@@ -41,7 +41,7 @@ public class FilmService { // отвечает за операции с филь
         return filmStorage.getById(id);
     }
 
-    public List<Film> findPopularFilms(int count) { // найти 10 самых популярных фильмов
+    public Collection<Film> findPopularFilms(int count) { // найти 10 самых популярных фильмов
         List<Film> all = new ArrayList<>(filmStorage.findAll());
         List<Film> liked = new ArrayList<>(sortedFilmsByPopularity(count));
         List<Film> sorted = new ArrayList<>(liked);
@@ -55,7 +55,7 @@ public class FilmService { // отвечает за операции с филь
                 .collect(Collectors.toList());
     }
 
-    private List<Film> sortedFilmsByPopularity(int count) { // сортировать фильмы по популярности
+    private Collection<Film> sortedFilmsByPopularity(int count) { // сортировать фильмы по популярности
         return likesMap.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.comparing(f -> 1 - f.size())))
                 .limit(count)
@@ -85,16 +85,17 @@ public class FilmService { // отвечает за операции с филь
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
         Set<Long> filmLikes = likesMap.get(filmId);
-        if (filmLikes.size() == 0) {
+        if (filmLikes == null) {
             throw new NullPointerException("Список отметок нравится фильма пуст.");
-        } else if (filmLikes.size() == 1) {
-            filmLikes.remove(userId);
-            likesMap.remove(filmId);
-            log.info("Удалена отметка нравится фильму: {}. Фильм удален из списка популярных.", getFilmById(filmId));
         } else {
             filmLikes.remove(userId);
-            likesMap.put(filmId, filmLikes);
-            log.info("Удалена отметка нравится фильму: {}", getFilmById(filmId));
+            if (filmLikes.size() == 0) {
+                likesMap.remove(filmId);
+                log.info("Фильм {} удален из списка популярных.", getFilmById(filmId));
+            } else {
+                likesMap.put(filmId, filmLikes);
+                log.info("Удалена отметка нравится фильму: {}", getFilmById(filmId));
+            }
         }
     }
 }
