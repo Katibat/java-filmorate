@@ -31,7 +31,7 @@ public class FilmControllerTest {
                 .name("")
                 .description("description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
@@ -52,7 +52,7 @@ public class FilmControllerTest {
                         "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
                         "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111")
                 .releaseDate(LocalDate.of(1999, 3, 31))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
@@ -64,7 +64,7 @@ public class FilmControllerTest {
                 .name("Matrix")
                 .description("")
                 .releaseDate(LocalDate.of(1999, 3, 31))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
@@ -76,7 +76,7 @@ public class FilmControllerTest {
                 .name("Before the cinema time")
                 .description("description Before the cinema time")
                 .releaseDate(LocalDate.of(1895, 12, 27))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
@@ -88,7 +88,7 @@ public class FilmControllerTest {
                 .name("Avatar")
                 .description("description Avatar")
                 .releaseDate(LocalDate.of(2009, 12, 17))
-                .duration(Duration.ofMinutes(0))
+                .duration(0)
                 .build();
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
@@ -100,7 +100,7 @@ public class FilmControllerTest {
                 .name("Avatar")
                 .description("description Avatar")
                 .releaseDate(LocalDate.of(2009, 12, 17))
-                .duration(Duration.ofMinutes(-120))
+                .duration(-120)
                 .build();
         assertThrows(ValidationException.class, () -> filmController.create(film));
     }
@@ -112,7 +112,7 @@ public class FilmControllerTest {
                 .name("Avatar")
                 .description("description Avatar")
                 .releaseDate(LocalDate.of(2009, 12, 17))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         filmController.create(film1);
         Film film2 = Film.builder()
@@ -120,7 +120,7 @@ public class FilmControllerTest {
                 .name("Avatar")
                 .description("other description for Avatar")
                 .releaseDate(LocalDate.of(2009, 12, 17))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         assertThrows(FilmAlreadyExistException.class, () -> filmController.create(film2));
     }
@@ -132,7 +132,7 @@ public class FilmControllerTest {
                 .name("A Dog’s Purpose")
                 .description("description A Dog’s Purpose")
                 .releaseDate(LocalDate.of(2016, 8, 26))
-                .duration(Duration.ofMinutes(180))
+                .duration(180)
                 .build();
         filmController.create(film);
         Film filmUpdate = Film.builder()
@@ -140,7 +140,7 @@ public class FilmControllerTest {
                 .name("A Dog’s Purpose")
                 .description("new description A Dog’s Purpose")
                 .releaseDate(LocalDate.of(2017, 1, 27))
-                .duration(Duration.ofMinutes(100))
+                .duration(100)
                 .build();
         filmController.put(filmUpdate);
         Film actual = filmController.getFilmById(1L);
@@ -154,7 +154,7 @@ public class FilmControllerTest {
                 .name("A Dog’s Purpose 2")
                 .description("description A Dog’s Purpose 2")
                 .releaseDate(LocalDate.of(2016, 8, 26))
-                .duration(Duration.ofMinutes(180))
+                .duration(180)
                 .build();
         filmController.create(film);
         Film filmUpdate = Film.builder()
@@ -162,7 +162,7 @@ public class FilmControllerTest {
                 .name("A Dog’s Purpose 2")
                 .description("new description A Dog’s Purpose 2")
                 .releaseDate(LocalDate.of(2017, 1, 27))
-                .duration(Duration.ofMinutes(100))
+                .duration(100)
                 .build();
         filmController.put(filmUpdate);
         Film actual = filmController.getFilmById(filmUpdate.getId());
