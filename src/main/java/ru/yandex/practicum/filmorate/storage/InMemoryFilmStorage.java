@@ -73,7 +73,7 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
                     film.getReleaseDate(), BIRTHDAY_CINEMA);
             return false;
         }
-        if (film.getDuration().isNegative() || film.getDuration().getSeconds() == 0) {
+        if (film.getDuration() <= 0) {
             log.warn("Поле duration заполнено некорректно: {}. Продолжительность фильма <= 0.", film.getDuration());
             return false;
         }
