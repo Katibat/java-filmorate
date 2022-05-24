@@ -8,14 +8,14 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.resource.IdGeneratorFilm;
 
+import java.time.LocalDate;
 import java.util.*;
-
-import static ru.yandex.practicum.filmorate.Constants.BIRTHDAY_CINEMA;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage { // хранение, обновление и поиск фильмов
     private final Map<Long, Film> films = new HashMap<>();
+    public static final LocalDate BIRTHDAY_CINEMA = LocalDate.of(1895, 12, 28);
 
     @Override
     public Film create(Film film) {
@@ -55,26 +55,25 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
 
     @Override
     public Optional<Film> getById(Long id) {
-        return Optional.ofNullable(films.get(id));
+        if (films.containsKey(id)) {
+            return Optional.ofNullable(films.get(id));
+        } else {
+            throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
+        }
     }
 
     private boolean validate(Film film) {
-        if (film.getName().isBlank() || film.getName() == null) {
+        if (film.getName() == null) {
             log.warn("Поле film заполнено некорректно: {}.", film.getName());
             return false;
         }
-        if (film.getDescription().length() > 200 || film.getDescription().isEmpty() || film.getDescription() == null) {
-            log.warn("Поле description заполнено некорректно: {}. " +
-                    "Отсутствует описание или превышен лимит 200 символов.", film.getDescription());
+        if (film.getDescription() == null) {
+            log.warn("Поле description заполнено некорректно: {}. ", film.getDescription());
             return false;
         }
         if (film.getReleaseDate().isBefore(BIRTHDAY_CINEMA)) {
             log.warn("Поле realeseDate заполнено некорректно: {}. Указанная дата релиза раньше {}.",
                     film.getReleaseDate(), BIRTHDAY_CINEMA);
-            return false;
-        }
-        if (film.getDuration() <= 0) {
-            log.warn("Поле duration заполнено некорректно: {}. Продолжительность фильма <= 0.", film.getDuration());
             return false;
         }
         return true;

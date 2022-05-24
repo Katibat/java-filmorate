@@ -10,8 +10,6 @@ import ru.yandex.practicum.filmorate.resource.IdGeneratorUser;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.Constants.TODAY_DATE;
-
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage { // хранение, обновление и поиск пользователей
@@ -61,7 +59,11 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
 
     @Override
     public Optional<User> getById(Long id) {
-        return Optional.ofNullable(users.get(id));
+        if (users.containsKey(id)) {
+            return Optional.ofNullable(users.get(id));
+        } else {
+            throw new UserNotFoundException("Введен не корректный id пользователя. Ваш id № " + id);
+        }
     }
 
     private boolean validate(User user) {
@@ -71,11 +73,6 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
         }
         if (user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
             log.warn("Поле login заполнено некорректно: {}.", user.getLogin());
-            return false;
-        }
-        if (user.getBirthday().isAfter(TODAY_DATE)) {
-            log.warn("Поле birthday заполнено некорректно: {}. Указанная дата дня рождения позже {}.",
-                    user.getBirthday(), TODAY_DATE);
             return false;
         }
         return true;

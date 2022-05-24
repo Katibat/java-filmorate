@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -10,10 +11,12 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping("/films")
 public class FilmController {
 
@@ -25,13 +28,13 @@ public class FilmController {
     }
 
     @PostMapping  // добавление фильма
-    public Film create(@RequestBody Film film) throws ValidationException, FilmAlreadyExistException {
+    public Film create(@Valid @RequestBody Film film) throws ValidationException, FilmAlreadyExistException {
         log.info("Добавлен фильм: {}", film);
         return filmService.create(film);
     }
 
     @PutMapping // обновление фильма
-    public Film put(@RequestBody Film film) throws ValidationException, FilmNotFoundException {
+    public Film put(@Valid @RequestBody Film film) throws ValidationException, FilmNotFoundException {
         log.info("Обновлены данные фильма: {}.", film);
         return filmService.put(film);
     }
@@ -66,7 +69,7 @@ public class FilmController {
     @GetMapping("/{id}") // получение фильма по id
     public Film getFilmById(@PathVariable Long id) throws FilmNotFoundException {
         Optional<Film> film = filmService.getFilmById(id);
-        if (film.isPresent()) {
+        if (film.isEmpty()) {
             log.debug("Попытка получить фильм с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }

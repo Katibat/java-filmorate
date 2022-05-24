@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
@@ -10,10 +11,12 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
@@ -24,13 +27,13 @@ public class UserController {
     }
 
     @PostMapping  // создание пользователя
-    public User create(@RequestBody User user) throws ValidationException, UserAlreadyExistException {
+    public User create(@Valid @RequestBody User user) throws ValidationException, UserAlreadyExistException {
         log.info("Добавлен пользователь: {}", user);
         return userService.create(user);
     }
 
     @PutMapping // обновление пользователя
-    public User put(@RequestBody User user) throws ValidationException, UserNotFoundException {
+    public User put(@Valid @RequestBody User user) throws ValidationException, UserNotFoundException {
         log.info("Обновлены данные пользователя: {}.", user);
         return userService.put(user);
     }
@@ -71,7 +74,7 @@ public class UserController {
     @GetMapping("/{id}") // получение пользователя по id
     public User getUserById(@PathVariable Long id) throws UserNotFoundException {
         Optional<User> user = userService.getUserById(id);
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             log.debug("Попытка получить пользователя с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + id);
         }
