@@ -19,7 +19,7 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public User create(User user) throws ValidationException, UserAlreadyExistException {
+    public User create(User user) {
         if (validate(user)) {
             for (User u : users.values()) {
                 if (u.getEmail().equals(user.getEmail()) || u.getLogin().equals(user.getLogin())) {
@@ -42,7 +42,7 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
     }
 
     @Override
-    public User put(User user) throws ValidationException, UserNotFoundException {
+    public User put(User user) {
         validate(user);
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);

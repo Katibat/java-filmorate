@@ -45,9 +45,9 @@ public class FilmService { // отвечает за операции с филь
         List<Film> all = new ArrayList<>(filmStorage.findAll());
         List<Film> liked = new ArrayList<>(sortedFilmsByPopularity(count));
         List<Film> sorted = new ArrayList<>(liked);
-        for (Film film : all) {
-            if (!liked.contains(film.getId())) {
-                sorted.add(film);
+        for (Film f : all) {
+            if (!(liked.contains(f.getId()))) {
+                sorted.add(f);
             }
         }
         return sorted.stream()

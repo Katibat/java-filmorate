@@ -8,7 +8,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
-import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
@@ -24,5 +23,5 @@ public class Film {
     @PastOrPresent
     private final LocalDate releaseDate; // дата релиза
     @Positive
-    private final Duration duration; // продолжительность фильма
+    private final Integer duration; // продолжительность фильма
 }

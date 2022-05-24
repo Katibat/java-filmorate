@@ -18,7 +18,7 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
-    public Film create(Film film) throws ValidationException, FilmAlreadyExistException {
+    public Film create(Film film) {
         if (validate(film)) {
             for (Film f : films.values()) {
                 if (f.getName().equals(film.getName())) {
@@ -36,7 +36,7 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
     }
 
     @Override
-    public Film put(Film film) throws ValidationException, FilmNotFoundException {
+    public Film put(Film film) {
         validate(film);
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
