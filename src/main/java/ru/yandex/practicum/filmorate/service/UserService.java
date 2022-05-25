@@ -93,7 +93,7 @@ public class UserService { // отвечает за добавление / уд�
             throw new FilmNotFoundException("В Filmorate отсутствует пользователь с идентификатором № " + userId);
         }
         return friendsMap.getOrDefault(userId, new HashSet<>()).stream()
-                .map(u->userStorage.getById(u).get())
+                .map(u -> userStorage.getById(u).get())
                 .collect(Collectors.toList()
                 );
     }

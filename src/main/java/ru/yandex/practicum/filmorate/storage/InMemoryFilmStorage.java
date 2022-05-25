@@ -15,7 +15,7 @@ import java.util.*;
 @Component
 public class InMemoryFilmStorage implements FilmStorage { // хранение, обновление и поиск фильмов
     private final Map<Long, Film> films = new HashMap<>();
-    public static final LocalDate BIRTHDAY_CINEMA = LocalDate.of(1895, 12, 28);
+    private static final LocalDate BIRTHDAY_CINEMA = LocalDate.of(1895, 12, 28);
 
     @Override
     public Film create(Film film) {
