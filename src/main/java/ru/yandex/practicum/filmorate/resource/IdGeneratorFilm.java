@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.resource;
 
 public class IdGeneratorFilm {
-    private static int id = 1;
+    private static Long id = 1L;
 
-    public static int generateId() {
+    public static Long generateId() {
         return id++;
     }
 }

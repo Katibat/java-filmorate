@@ -1,76 +1,78 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.resource.IdGeneratorFilm;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping("/films")
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private final static LocalDate BIRTHDAY_CINEMA = LocalDate.of(1895, 12, 28);
+
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @PostMapping  // добавление фильма
-    public Film create(@RequestBody Film film) {
-        if (validateInput(film)) {
-            for (Film f : films.values()) {
-                if (f.getName().equals(film.getName())) {
-                    log.debug("Попытка создания фильма с уже используемым названием: {}.", film);
-                    throw new ValidationException("В Filmorate уже добавлен фильм с названием: " + film.getName());
-                }
-            }
-            film.setId(IdGeneratorFilm.generateId());
-            films.put(film.getId(), film);
-            log.info("Добавлен фильм: {}", film);
-            return film;
-        } else {
-            throw new ValidationException("Введены некорректные данные, проверьте корректность заполнения полей.");
-        }
+    public Film create(@Valid @RequestBody Film film) throws ValidationException, FilmAlreadyExistException {
+        log.info("Добавлен фильм: {}", film);
+        return filmService.create(film);
     }
 
     @PutMapping // обновление фильма
-    public Film put(@RequestBody Film film) {
-        validateInput(film);
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-            log.info("Обновлены данные фильма: {}.", film);
-        } else {
-            log.debug("Попытка обновления фильма с несуществующим идентификатором: {}.", film);
-            throw new ValidationException("В Filmorate отсутствует фильм с идентификатором № " + film.getId());
-        }
-        return film;
+    public Film put(@Valid @RequestBody Film film) throws ValidationException, FilmNotFoundException {
+        log.info("Обновлены данные фильма: {}.", film);
+        return filmService.put(film);
+    }
+
+    @PutMapping("/{id}/like/{userId}") // добавление лайка
+    public void createLike(
+            @PathVariable Long id,
+            @PathVariable Long userId) throws FilmNotFoundException, UserNotFoundException {
+        filmService.addLike(id, userId);
+        log.info("Фильму {} добавлена отметка нравится.", filmService.getFilmById(id));
+    }
+
+    @DeleteMapping("/{id}/like/{userId}") // добавление лайка
+    public void deleteLike(
+            @PathVariable Long id,
+            @PathVariable Long userId) throws FilmNotFoundException, UserNotFoundException {
+        filmService.deleteLike(id, userId);
+        log.info("Фильму {} удалена отметка нравится.", filmService.getFilmById(id));
     }
 
     @GetMapping  // получение всех фильмов
-    public List<Film> findAll() {
-        return new ArrayList<>(films.values());
+    public Collection<Film> getAllFilms() {
+        return filmService.findAllFilms();
     }
 
-    private boolean validateInput(Film film) {
-        if (film.getName().isBlank() || film.getName() == null) {
-            log.warn("Поле film заполнено некорректно: {}.", film.getName());
-            return false;
+    @GetMapping("/popular")  // получение 10 популярных фильмов
+    public Collection<Film> getPopularFilms(
+            @RequestParam(value = "count", defaultValue = "10", required = false) int count) {
+        return filmService.findPopularFilms(count);
+    }
+
+    @GetMapping("/{id}") // получение фильма по id
+    public Film getFilmById(@PathVariable Long id) throws FilmNotFoundException {
+        Optional<Film> film = filmService.getFilmById(id);
+        if (film.isEmpty()) {
+            log.debug("Попытка получить фильм с несуществующим идентификатором: {}.", id);
+            throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }
-        if (film.getDescription().length() > 200 || film.getDescription().isEmpty() || film.getDescription() == null) {
-            log.warn("Поле description заполнено некорректно: {}. " +
-                    "Отсутствует описание или превышен лимит 200 символов.", film.getDescription());
-            return false;
-        }
-        if (film.getReleaseDate().isBefore(BIRTHDAY_CINEMA)) {
-            log.warn("Поле realeseDate заполнено некорректно: {}. Указанная дата релиза раньше {}.",
-                    film.getReleaseDate(), BIRTHDAY_CINEMA);
-            return false;
-        }
-        if (film.getDuration().isNegative() || film.getDuration().getSeconds() == 0) {
-            log.warn("Поле duration заполнено некорректно: {}. Продолжительность фильма <= 0.", film.getDuration());
-            return false;
-        }
-        return true;
+        return film.get();
     }
 }
