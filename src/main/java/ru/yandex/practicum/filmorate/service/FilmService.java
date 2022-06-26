@@ -1,71 +1,34 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.Dao.GenreDaoEntity;
-import ru.yandex.practicum.filmorate.storage.Dao.MpaDaoEntity;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
 
 @Service
-public class FilmService { // отвечает за операции с фильмами: добавление/удаление лайков, получение списков фильмов
-    private FilmStorage filmStorage;
-    private final GenreDaoEntity genreStorage;
-    private final MpaDaoEntity mpaStorage;
+public interface FilmService { // отвечает за операции с фильмами: добавление/удаление лайков, получение списков фильмов
 
-    @Autowired
-    public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage, MpaDaoEntity mpaStorage, GenreDaoEntity genreStorage) {
-        this.filmStorage = filmStorage;
-        this.mpaStorage = mpaStorage;
-        this.genreStorage = genreStorage;
-    }
+    Film create(Film film); // добавить фильм
 
-    public Film create(Film film) { // добавить фильм
-        return filmStorage.create(film);
-    }
+    Film put(Film film); // обновить фильм
 
-    public Film put(Film film) { // обновить фильм
-        return filmStorage.put(film);
-    }
+    Collection<Film> findAllFilms(); // найти все фильмы
 
-    public Collection<Film> findAllFilms() { // найти все фильмы
-        return filmStorage.findAll();
-    }
+    Film getFilmById(Long id); // найти фильм по идентификатору
 
-    public Optional<Film> getFilmById(Long id) { // найти фильм по идентификатору
-        return filmStorage.getById(id);
-    }
+    Collection<Film> findPopularFilms(int count); // найти популярные фильмы
 
-    public Collection<Film> findPopularFilms(int count) { // найти популярные фильмы
-        return filmStorage.getPopular(count);
-    }
+    void addLike(Long filmId, Long userId); // добавить отметку нравится фильму
 
-    public void addLike(Long filmId, Long userId) { // добавить отметку нравится фильму
-        filmStorage.addLike(filmId, userId);
-    }
+    void deleteLike(Long filmId, Long userId); // удалить отметку нравится фильму
 
-    public void deleteLike(Long filmId, Long userId) { // удалить отметку нравится фильму
-        filmStorage.deleteLike(filmId, userId);
-    }
+    Mpa getMpaById(int id); // найти рейтинг MPA по идентификатору
 
-    public Mpa getMpaById(int id) {
-        return mpaStorage.getById(id);
-    }
+    Collection<Mpa> getAllMpa(); // найти все рейтинги MPA
 
-    public Collection<Mpa> getAllMpa() {
-        return mpaStorage.getAll();
-    }
+    Genre getGenreById(int id); // найти жанр фильма по идентификатору
 
-    public Genre getGenreById(int id) {
-        return genreStorage.getById(id);
-    }
-
-    public List<Genre> getAllGenres() {
-        return genreStorage.getAll();
-    }
+    List<Genre> getAllGenres(); // найти все жанры фильма
 }

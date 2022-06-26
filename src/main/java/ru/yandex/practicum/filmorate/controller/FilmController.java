@@ -70,12 +70,12 @@ public class FilmController {
 
     @GetMapping("/{id}") // получение фильма по id
     public Film getFilmById(@PathVariable Long id) throws FilmNotFoundException {
-        Optional<Film> film = filmService.getFilmById(id);
-        if (film.isEmpty()) {
+        Film film = filmService.getFilmById(id);
+        if (film == null) {
             log.debug("Попытка получить фильм с несуществующим идентификатором: {}.", id);
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }
-        return film.get();
+        return film;
     }
 
     @GetMapping("/mpa")  // получение списка mpa-рейтинга фильмов

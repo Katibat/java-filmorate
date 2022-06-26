@@ -59,34 +59,12 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
     }
 
     @Override
-    public Optional<Film> getById(Long id) {
+    public Film getById(Long id) {
         if (films.containsKey(id)) {
-            return Optional.ofNullable(films.get(id));
+            return films.get(id);
         } else {
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }
-    }
-
-    @Override
-    public void addLike(Long filmId, Long userId) {
-        if (!films.containsKey(filmId)) {
-            throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + filmId);
-        }
-        likes.get(filmId).add(userId);
-        log.info("Добавлена отметка нравится фильму: {}", getById(filmId));
-    }
-
-    @Override
-    public void deleteLike(Long filmId, Long userId) {
-        if (!likes.containsKey(filmId)) {
-            throw new FilmNotFoundException("Список отметок нравится у фильма пуст");
-        }
-        if (!likes.containsKey(filmId)) {
-            throw new FilmNotFoundException("В списке отметок нравится отсутствует пользователь с идентификатором № "
-                    + userId);
-        }
-        likes.get(filmId).remove(userId);
-        log.info("Удалена отметка нравится фильму: {}", getById(filmId));
     }
 
     @Override

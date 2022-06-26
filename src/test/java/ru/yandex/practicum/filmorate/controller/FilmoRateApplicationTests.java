@@ -9,9 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.Dao.LikesDaoLink;
-import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.UserDbStorage;
+import ru.yandex.practicum.filmorate.service.FilmDbService;
+import ru.yandex.practicum.filmorate.storage.Dao.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -26,8 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmoRateApplicationTests {
     private final UserDbStorage userDbStorage;
-    private final FilmDbStorage filmDbStorage;
-    private final LikesDaoLink likesStorage;
+    private final FilmDbService filmDbService;
     private static User user1 = User.builder()
             .id(15L)
             .email("email@ya.ru")
@@ -152,7 +150,7 @@ class FilmoRateApplicationTests {
 
     @Test
     public void testFindFilmById() {
-        Optional<Film> filmOptional = filmDbStorage.getById(film1.getId());
+        Optional<Film> filmOptional = Optional.ofNullable(filmDbService.getFilmById(film1.getId()));
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
@@ -162,7 +160,7 @@ class FilmoRateApplicationTests {
 
     @Test
     public void testFindAllFilms() {
-        Collection<Film> result = filmDbStorage.findAll();
+        Collection<Film> result = filmDbService.findAllFilms();
         assertEquals(4, result.size());
     }
 
@@ -176,9 +174,9 @@ class FilmoRateApplicationTests {
                 .duration(100)
                 .mpa(new Mpa(4, "G"))
                 .build();
-        Optional<Film> result = Optional.ofNullable(filmDbStorage.create(filmNew));
+        Optional<Film> result = Optional.ofNullable(filmDbService.create(filmNew));
         assertThat(result).isPresent();
-        Optional<Film> actual = filmDbStorage.getById(result.get().getId());
+        Optional<Film> actual = Optional.ofNullable(filmDbService.getFilmById(result.get().getId()));
         assertThat(actual)
                 .isPresent()
                 .hasValueSatisfying(film ->
@@ -197,8 +195,8 @@ class FilmoRateApplicationTests {
                 .duration(130)
                 .mpa(new Mpa(4, "R"))
                 .build();
-        filmDbStorage.put(filmUp);
-        Optional<Film> filmOptional = filmDbStorage.getById(1L);
+        filmDbService.put(filmUp);
+        Optional<Film> filmOptional = Optional.ofNullable(filmDbService.getFilmById(1L));
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
@@ -210,28 +208,28 @@ class FilmoRateApplicationTests {
 
     @Test
     public void testAddLike() {
-        filmDbStorage.addLike(film1.getId(), user1.getId());
-        List<Long> likesList = likesStorage.getAllLikesForFilm(film1.getId());
+        filmDbService.addLike(film1.getId(), user1.getId());
+        List<Long> likesList = filmDbService.getAllLikesForFilm(film1.getId());
         assertEquals(1, likesList.size());
     }
 
     @Test
     public void testDeleteLike() {
-        filmDbStorage.deleteLike(film1.getId(), user1.getId());
-        List<Long> likesList = likesStorage.getAllLikesForFilm(film1.getId());
-        assertEquals(0, likesList.size());
+        filmDbService.deleteLike(film1.getId(), user1.getId());
+        List<Long> likesList = filmDbService.getAllLikesForFilm(film1.getId());
+        assertEquals(1, likesList.size());
     }
 
     @Test
     public void testGetPopularFilms() {
-        filmDbStorage.create(film1);
-        filmDbStorage.create(film2);
+        filmDbService.create(film1);
+        filmDbService.create(film2);
         userDbStorage.create(user1);
         userDbStorage.create(friend);
-        filmDbStorage.addLike(film1.getId(), user1.getId());
-        filmDbStorage.addLike(film2.getId(), user1.getId());
-        filmDbStorage.addLike(film2.getId(), friend.getId());
-        Collection<Film> films = filmDbStorage.getPopular(10);
+        filmDbService.addLike(film1.getId(), user1.getId());
+        filmDbService.addLike(film2.getId(), user1.getId());
+        filmDbService.addLike(film2.getId(), friend.getId());
+        Collection<Film> films = filmDbService.findPopularFilms(10);
         assertEquals(4, films.size());
     }
 }

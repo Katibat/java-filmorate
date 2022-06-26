@@ -11,6 +11,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -28,9 +29,7 @@ public class Film {
     @Positive
     private Integer duration; // продолжительность фильма
     private Mpa mpa; // рейтинг фильма
-    private List<Genre> genre; // список жанров фильма
-//    private List<Integer> likes; // список отметок нравится
-
+    private Set<Genre> genre; // список жанров фильма
 
     public Film(String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa) {
         this.name = name;

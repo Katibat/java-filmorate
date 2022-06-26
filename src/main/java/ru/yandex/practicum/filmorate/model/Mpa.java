@@ -10,8 +10,8 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Mpa {
-    private int id;
     @NotNull
+    private int id;
     private String name;
 
     public Mpa(int id) {
