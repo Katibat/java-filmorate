@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +10,6 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-@AllArgsConstructor
 public class User {
     private Long id; // целочисленный идентификатор
     @Email
@@ -21,4 +19,16 @@ public class User {
     private String name; // имя для отображения
     @Past
     private LocalDate birthday; // дата рождения
+
+    public User(Long id, String email, String login, String name, LocalDate birthday) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
+
+    public String getName() {
+        return (name == null || name.isEmpty()) ? login : name;
+    }
 }

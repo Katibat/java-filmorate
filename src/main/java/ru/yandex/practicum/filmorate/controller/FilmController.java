@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -47,7 +49,7 @@ public class FilmController {
         log.info("Фильму {} добавлена отметка нравится.", filmService.getFilmById(id));
     }
 
-    @DeleteMapping("/{id}/like/{userId}") // добавление лайка
+    @DeleteMapping("/{id}/like/{userId}") // удаление лайка
     public void deleteLike(
             @PathVariable Long id,
             @PathVariable Long userId) throws FilmNotFoundException, UserNotFoundException {
@@ -74,5 +76,25 @@ public class FilmController {
             throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + id);
         }
         return film.get();
+    }
+
+    @GetMapping("/mpa")  // получение списка mpa-рейтинга фильмов
+    public Collection<Mpa> getMpa() {
+        return filmService.getAllMpa();
+    }
+
+    @GetMapping("/mpa/{id}")  // получение mpa-рейтинга фильмов
+    public Mpa getMpaById(@PathVariable int id) {
+        return filmService.getMpaById(id);
+    }
+
+    @GetMapping("/genre")  // получение списка жанров фильмов
+    public Collection<Genre> getGenre() {
+        return filmService.getAllGenres();
+    }
+
+    @GetMapping("/genre/{id}")  // получение жанра фильмов
+    public Genre getGenreById(@PathVariable int id) {
+        return filmService.getGenreById(id);
     }
 }

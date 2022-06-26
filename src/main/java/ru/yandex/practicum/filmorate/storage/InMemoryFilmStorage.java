@@ -6,28 +6,33 @@ import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.resource.IdGeneratorFilm;
+import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
-import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage { // хранение, обновление и поиск фильмов
-    private final Map<Long, Film> films = new HashMap<>();
-    private static final LocalDate BIRTHDAY_CINEMA = LocalDate.of(1895, 12, 28);
+    private final Map<Long, Film> films; // таблица фильмов
+    private final Map<Long, Set<Long>> likes; // таблица отметок нравится фильма
+
+    public InMemoryFilmStorage() {
+        films = new HashMap<>();
+        likes = new HashMap<>();
+    }
 
     @Override
     public Film create(Film film) {
-        if (validate(film)) {
+        if (FilmValidator.validate(film)) {
             for (Film f : films.values()) {
                 if (f.getName().equals(film.getName())) {
                     log.debug("Попытка создания фильма с уже используемым названием: {}.", film);
                     throw new FilmAlreadyExistException("В Filmorate уже добавлен фильм с названием: " + film.getName());
                 }
             }
-            film.setId(IdGeneratorFilm.generateId());
             films.put(film.getId(), film);
+            likes.put(film.getId(), new HashSet<>());
             log.info("Добавлен фильм: {}", film);
             return film;
         } else {
@@ -37,7 +42,7 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
 
     @Override
     public Film put(Film film) {
-        validate(film);
+        FilmValidator.validate(film);
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
             log.info("Обновлены данные фильма: {}.", film);
@@ -62,20 +67,32 @@ public class InMemoryFilmStorage implements FilmStorage { // хранение, �
         }
     }
 
-    private boolean validate(Film film) {
-        if (film.getName() == null) {
-            log.warn("Поле film заполнено некорректно: {}.", film.getName());
-            return false;
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        if (!films.containsKey(filmId)) {
+            throw new FilmNotFoundException("В Filmorate отсутствует фильм с идентификатором № " + filmId);
         }
-        if (film.getDescription() == null) {
-            log.warn("Поле description заполнено некорректно: {}. ", film.getDescription());
-            return false;
+        likes.get(filmId).add(userId);
+        log.info("Добавлена отметка нравится фильму: {}", getById(filmId));
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        if (!likes.containsKey(filmId)) {
+            throw new FilmNotFoundException("Список отметок нравится у фильма пуст");
         }
-        if (film.getReleaseDate().isBefore(BIRTHDAY_CINEMA)) {
-            log.warn("Поле realeseDate заполнено некорректно: {}. Указанная дата релиза раньше {}.",
-                    film.getReleaseDate(), BIRTHDAY_CINEMA);
-            return false;
+        if (!likes.containsKey(filmId)) {
+            throw new FilmNotFoundException("В списке отметок нравится отсутствует пользователь с идентификатором № "
+                    + userId);
         }
-        return true;
+        likes.get(filmId).remove(userId);
+        log.info("Удалена отметка нравится фильму: {}", getById(filmId));
+    }
+
+    @Override
+    public Collection<Film> getPopular(int count) {
+        return likes.entrySet().stream()
+                .sorted((o1, o2) -> Long.compare(o2.getValue().size(), o1.getValue().size()))
+                .map(t -> films.get(t.getKey())).limit(count).collect(Collectors.toList());
     }
 }
