@@ -9,11 +9,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.validator.FilmValidator;
 
 import java.sql.*;
 import java.sql.Date;
@@ -51,6 +53,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
+        FilmValidator.validate(film);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             jdbcTemplate.update(
@@ -83,6 +86,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film put(Film film) {
+        FilmValidator.validate(film);
         if (film.getId() != null && getById(film.getId()) != null) {
             jdbcTemplate.update(SQL_UPDATE,
                     film.getName(),

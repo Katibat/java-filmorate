@@ -232,4 +232,19 @@ class FilmoRateApplicationTests {
         Collection<Film> films = filmDbService.findPopularFilms(10);
         assertEquals(4, films.size());
     }
+
+    @Test
+    public void testGetMpaFilm() {
+        assertEquals(5, filmDbService.getAllMpa().size());
+        assertEquals("NC-17", filmDbService.getMpaById(5).getName());
+        assertEquals("PG-13", filmDbService.getMpaById(3).getName());
+    }
+
+    @Test
+    public void testGetGenreFilm() {
+        assertEquals(6, filmDbService.getAllGenres().size());
+        assertEquals("Драма", filmDbService.getGenreById(2).getName());
+        assertEquals("Триллер", filmDbService.getGenreById(4).getName());
+        assertEquals("Боевик", filmDbService.getGenreById(6).getName());
+    }
 }

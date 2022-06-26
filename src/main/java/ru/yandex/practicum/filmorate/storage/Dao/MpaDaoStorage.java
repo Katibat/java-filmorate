@@ -25,7 +25,7 @@ public class MpaDaoStorage implements MpaStorage {
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(SQL_GET_MPA, id);
         if (rowSet.next()) {
             return new Mpa(
-                    rowSet.getInt("id_mpa"),
+                    rowSet.getInt("mpa_id"),
                     rowSet.getString("name")
             );
         } else {

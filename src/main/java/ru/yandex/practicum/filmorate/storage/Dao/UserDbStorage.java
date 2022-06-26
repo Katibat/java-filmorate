@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.validator.UserValidator;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -45,6 +46,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+        UserValidator.validate(user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             jdbcTemplate.update(
@@ -76,6 +78,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User put(User user) {
+        UserValidator.validate(user);
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(SQL_GET_USER, user.getId());
         if (rowSet.next()) {
             jdbcTemplate.update(SQL_UPDATE,
