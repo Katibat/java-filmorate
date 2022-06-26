@@ -82,7 +82,7 @@ class FilmoRateApplicationTests {
     @Test
     public void testFindAllUsers() {
         Collection<User> result = userDbStorage.findAll();
-        assertEquals(6, result.size());
+        assertEquals(8, result.size());
     }
 
     @Test
@@ -118,28 +118,36 @@ class FilmoRateApplicationTests {
     public void testAddFriend() {
         userDbStorage.addFriend(user1.getId(), friend.getId());
         Collection<User> userList = userDbStorage.getUserFriends(user1.getId());
-        assertEquals(2, userList.size());
+        assertEquals(1, userList.size());
     }
 
     @Test
     public void testGetUserFriends() {
         Collection<User> result = userDbStorage.getUserFriends(user1.getId());
-        assertEquals(2, result.size());
+        assertEquals(1, result.size());
     }
 
     @Test
     public void testDeleteFriend() {
         userDbStorage.deleteFriend(user1.getId(), friend.getId());
         Collection<User> userList = userDbStorage.getUserFriends(user1.getId());
-        assertEquals(1, userList.size());
+        assertEquals(0, userList.size());
     }
 
     @Test
     public void testGetCommonFriends() {
-        userDbStorage.create(commonFriend);
-        userDbStorage.addFriend(user1.getId(), commonFriend.getId());
-        userDbStorage.addFriend(friend.getId(), commonFriend.getId());
-        assertEquals(1, userDbStorage.getCommonFriends(user1.getId(), friend.getId()).size());
+        User userCommon = new User(85L, "emailCom@ya.ru", "loginCom",
+                "userCom",LocalDate.parse("2009-01-01"));
+        User userCommon2 = new User(95L,"emailCom2@ya.ru","loginCom2",
+                "userCom2",LocalDate.parse("2005-01-01"));
+        User userCommon3 = new User(105L,"emailCom3@ya.ru","loginCom3",
+                "userCom3",LocalDate.parse("1999-08-01"));
+        userDbStorage.create(userCommon);
+        userDbStorage.create(userCommon2);
+        userDbStorage.create(userCommon3);
+        userDbStorage.addFriend(userCommon.getId(), userCommon3.getId());
+        userDbStorage.addFriend(userCommon2.getId(), userCommon3.getId());
+        assertEquals(1, userDbStorage.getCommonFriends(userCommon.getId(), userCommon2.getId()).size());
     }
 
     @Test

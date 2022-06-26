@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private static final String SQL_INSERT_USER = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
-    private static final String SQL_INSERT_FRIEND = "INSERT INTO friendship (user_id, friend_id, status) " +
-            "VALUES (?, ?, ?)";
+    private static final String SQL_INSERT_FRIEND = "INSERT INTO friendship (user_id, friend_id) " +
+            "VALUES (?, ?)";
     private static final String SQL_UPDATE = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? " +
             "WHERE user_id = ?";
     private static final String SQL_DELETE_USER = "DELETE FROM users WHERE user_id = ?";
@@ -120,7 +120,7 @@ public class UserDbStorage implements UserStorage {
         if (!userRows.next()) {
             throw new UserNotFoundException("В Filmorate отсутствует пользователь с идентификатором №: " + friendId);
         }
-        jdbcTemplate.update(SQL_INSERT_FRIEND, userId, friendId, 1);
+        jdbcTemplate.update(SQL_INSERT_FRIEND, userId, friendId);
         log.info("Пользователь {} добавлен в список друзей пользователя {}.", userId, friendId);
     }
 
