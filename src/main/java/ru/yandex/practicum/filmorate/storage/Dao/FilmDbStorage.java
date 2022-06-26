@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.Dao.GenreDaoLink;
 import ru.yandex.practicum.filmorate.storage.Dao.LikesDaoLink;
 
 import java.sql.*;
@@ -80,7 +79,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film put(Film film) {
-//        getById(film.getId());
         try {
             jdbcTemplate.update(SQL_UPDATE,
                     film.getName(),

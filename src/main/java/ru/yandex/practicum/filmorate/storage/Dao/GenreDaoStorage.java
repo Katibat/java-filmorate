@@ -5,16 +5,16 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
-@Repository
-public class GenreDaoEntity implements EntityDaoStorage<Genre> {
+@Component
+public class GenreDaoEntity implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
     private static final String SQL_INSERT_GENRE = "INSERT INTO genre VALUES (?, ?)";
     private static final String SQL_UPDATE_GENRE = "UPDATE genre SET name = ? WHERE genre_id = ?";
