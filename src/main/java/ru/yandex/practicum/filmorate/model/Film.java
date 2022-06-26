@@ -10,8 +10,8 @@ import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 @Builder
@@ -29,7 +29,7 @@ public class Film {
     @Positive
     private Integer duration; // продолжительность фильма
     private Mpa mpa; // рейтинг фильма
-    private Set<Genre> genre; // список жанров фильма
+    private TreeSet<Genre> genres; // список жанров фильма
 
     public Film(String name, String description, LocalDate releaseDate, Integer duration, Mpa mpa) {
         this.name = name;

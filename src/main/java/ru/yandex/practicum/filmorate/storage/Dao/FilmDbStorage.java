@@ -108,7 +108,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setReleaseDate(rowSet.getDate("release_date").toLocalDate());
             film.setDuration(rowSet.getInt("duration"));
             film.setMpa(getFilmMpa(id));
-            film.setGenre(getFilmGenres(id));
+            film.setGenres(getFilmGenres(id));
             log.info("Получен фильм с идентификатором {}.", id);
             return film;
         } else {
@@ -132,7 +132,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private Set<Genre> getFilmGenres(Long id) {
+    private TreeSet<Genre> getFilmGenres(Long id) {
         List<Genre> genresList = jdbcTemplate.query(SQL_GET_GENRE_FOR_FILM, (rs, rowNum) ->
                 new Genre(rs.getInt("genre_id"), rs.getString("name")), id);
         if (!genresList.isEmpty()) {
@@ -143,8 +143,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void linkFilmGenre(Film film) {
-        if (film.getGenre() != null && !film.getGenre().isEmpty()) {
-            for (Genre genre : film.getGenre()) {
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            for (Genre genre : film.getGenres()) {
                 jdbcTemplate.update(SQL_MERGE_GENRE_FOR_FILM, film.getId(), genre.getId());
             }
         }
