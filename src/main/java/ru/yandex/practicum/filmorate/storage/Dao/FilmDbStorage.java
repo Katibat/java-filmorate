@@ -3,13 +3,11 @@ package ru.yandex.practicum.filmorate.storage.Dao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
-import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -33,6 +31,7 @@ public class FilmDbStorage implements FilmStorage {
             "duration = ?, mpa_id = ? WHERE film_id = ?";
     private static final String SQL_MERGE_GENRE_FOR_FILM = "MERGE INTO film_genre (film_id, genre_id) " +
             "KEY (film_id, genre_id) VALUES (?, ?)";
+    private static final String SQL_DELETE_GENRE_FILM = "DELETE FROM film_genre WHERE film_id = ?";
     private static final String SQL_GET_FILM = "SELECT * FROM films WHERE film_id = ?";
     private static final String SQL_GET_ALL_FILMS = "SELECT * FROM films";
     private static final String SQL_GET_POPULAR_FILMS =
@@ -55,33 +54,20 @@ public class FilmDbStorage implements FilmStorage {
     public Film create(Film film) {
         FilmValidator.validate(film);
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        try {
-            jdbcTemplate.update(
-                    connection -> {
-                        PreparedStatement stmt = connection.prepareStatement(SQL_INSERT_FILM, new String[]{"film_id"});
-                        stmt.setString(1, film.getName());
-                        stmt.setString(2, film.getDescription());
-                        stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
-                        stmt.setLong(4, film.getDuration());
-                        stmt.setLong(5, film.getMpa().getId());
-                        return stmt;
-                    }, keyHolder);
-            film.setId(keyHolder.getKey().longValue());
-            linkFilmGenre(film);
-            log.info("Добавлен фильм с идентификатором: {}", film.getId());
-            return film;
-        } catch (DuplicateKeyException e) {
-            if (e.toString().contains("film_id")) {
-                log.warn("Попытка добавления фильма с существующем идентификатором: {}", film.getId());
-                throw new FilmAlreadyExistException("Filmorate содержит фильм с идентификатором: " + film.getId());
-            } else if (e.toString().contains("IDX_FILMS_NAME_DATE")) {
-                log.warn("Попытка добавления фильма с существующем названием {} и датой релиза: {}.",
-                        film.getName(), film.getId());
-                throw new FilmAlreadyExistException("Фильм с аналогичным названием и датой релиза уже существует.");
-            } else {
-                throw new UnsupportedOperationException(e.getMessage());
-            }
-        }
+        jdbcTemplate.update(
+                connection -> {
+                    PreparedStatement stmt = connection.prepareStatement(SQL_INSERT_FILM, new String[]{"film_id"});
+                    stmt.setString(1, film.getName());
+                    stmt.setString(2, film.getDescription());
+                    stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
+                    stmt.setLong(4, film.getDuration());
+                    stmt.setLong(5, film.getMpa().getId());
+                    return stmt;
+                }, keyHolder);
+        film.setId(keyHolder.getKey().longValue());
+        linkFilmGenre(film);
+        log.info("Добавлен фильм с идентификатором: {}", film.getId());
+        return film;
     }
 
     @Override
@@ -96,12 +82,14 @@ public class FilmDbStorage implements FilmStorage {
                     film.getMpa().getId(),
                     film.getId()
             );
+            jdbcTemplate.update(SQL_DELETE_GENRE_FILM, film.getId());
             linkFilmGenre(film);
             log.info("Обновлены данные фильма: {}.", film.getName());
             return film;
         } else {
-            return null;
+            create(film);
         }
+        return null;
     }
 
     @Override
@@ -162,7 +150,8 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
+    private Film mapRowToFilm(ResultSet resultSet, int rowNum) {
+        try {
         Long filmId = resultSet.getLong("film_id");
         return Film.builder()
                 .id(filmId)
@@ -172,5 +161,8 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(resultSet.getInt("duration"))
                 .mpa(new Mpa(resultSet.getInt("mpa_id")))
                 .build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
