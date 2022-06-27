@@ -7,11 +7,11 @@ import ru.yandex.practicum.filmorate.model.User;
 public class UserValidator {
     public static boolean validate(User user) {
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Поле email заполнено некорректно: {}.", user.getEmail());
+            log.warn("Поле email заполнено некорректно: пустое или не содержит символ @.");
             return false;
         }
         if (user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
-            log.warn("Поле login заполнено некорректно: {}.", user.getLogin());
+            log.warn("Передано пустое поле login.");
             return false;
         }
         return true;
