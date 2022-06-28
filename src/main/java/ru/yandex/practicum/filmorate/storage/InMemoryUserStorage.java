@@ -6,19 +6,22 @@ import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.resource.IdGeneratorUser;
+import ru.yandex.practicum.filmorate.validator.UserValidator;
 
 import java.util.*;
 
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage { // хранение, обновление и поиск пользователей
+    private final Map<Long, User> users; // таблица пользователей
 
-    private final Map<Long, User> users = new HashMap<>();
+    public InMemoryUserStorage() {
+        users = new HashMap<>();
+    }
 
     @Override
     public User create(User user) {
-        if (validate(user)) {
+        if (UserValidator.validate(user)) {
             for (User u : users.values()) {
                 if (u.getEmail().equals(user.getEmail()) || u.getLogin().equals(user.getLogin())) {
                     log.info("Попытка создания пользователя с уже используемым адресом электронной почты " +
@@ -30,7 +33,6 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
                 user.setName(user.getLogin());
                 log.info("Имя пользователя не было заполнено, автоматически присвоено имя логина: {}.", user.getName());
             }
-            user.setId(IdGeneratorUser.generateId());
             users.put(user.getId(), user);
             log.info("Добавлен пользователь: {}", user);
             return user;
@@ -41,7 +43,7 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
 
     @Override
     public User put(User user) {
-        validate(user);
+        UserValidator.validate(user);
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
             log.info("Обновлены данные пользователя: {}.", user);
@@ -64,17 +66,5 @@ public class InMemoryUserStorage implements UserStorage { // хранение, �
         } else {
             throw new UserNotFoundException("Введен не корректный id пользователя. Ваш id № " + id);
         }
-    }
-
-    private boolean validate(User user) {
-        if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Поле email заполнено некорректно: {}.", user.getEmail());
-            return false;
-        }
-        if (user.getLogin().contains(" ") || user.getLogin().isEmpty()) {
-            log.warn("Поле login заполнено некорректно: {}.", user.getLogin());
-            return false;
-        }
-        return true;
     }
 }

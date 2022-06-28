@@ -1,4 +1,5 @@
 *.class
+*.db
 *.log
 *.jar
 *.war

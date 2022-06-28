@@ -47,7 +47,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}") // удаление друга
-    public void deleteLike(
+    public void deleteFriend(
             @PathVariable Long id,
             @PathVariable Long friendId) throws UserNotFoundException {
         userService.deleteFriend(id, friendId);
@@ -59,11 +59,11 @@ public class UserController {
         return userService.getFriendsForUser(id);
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}") // получение списка общих друзей 2х пользователей
+    @GetMapping("/{id}/friends/common/{friendId}") // получение списка общих друзей 2х пользователей
     public Collection<User> getCommonFriends(
             @PathVariable Long id,
-            @PathVariable Long otherId) throws UserNotFoundException {
-        return userService.getCommonFriends(id, otherId);
+            @PathVariable Long friendId) throws UserNotFoundException {
+        return userService.getCommonFriends(id, friendId);
     }
 
     @GetMapping  // получение списка всех пользователей
